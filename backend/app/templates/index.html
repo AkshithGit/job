@@ -1,0 +1,145 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>JobBoard</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 16px; }
+    .row { display:flex; gap:12px; flex-wrap:wrap; align-items:end; }
+    input, select { padding:8px; }
+    button { padding:8px 10px; cursor:pointer; }
+    table { width:100%; border-collapse: collapse; margin-top: 14px; }
+    th, td { border: 1px solid #ddd; padding: 10px; vertical-align: top; }
+    th { background:#f7f7f7; text-align:left; }
+    .pill { display:inline-block; padding:2px 8px; border-radius:999px; background:#111827; color:white; font-size:12px; margin-right:6px; }
+    .muted { color:#666; font-size: 12px; }
+    a { color: #0b5fff; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .card { border:1px solid #e5e7eb; border-radius:10px; padding:12px; background:#fafafa; }
+  </style>
+</head>
+<body>
+  <h2>JobBoard — Jobs List</h2>
+
+  <div class="card">
+    <div class="row">
+      <div>
+        <div class="muted">Search</div>
+        <input id="q" placeholder="java, devops, .net, spring, terraform..." style="min-width:280px;">
+      </div>
+      <div>
+        <div class="muted">Remote</div>
+        <select id="remote">
+          <option value="">Any</option>
+          <option value="true">Remote</option>
+          <option value="false">Onsite/Hybrid</option>
+        </select>
+      </div>
+      <div>
+        <div class="muted">Contract</div>
+        <select id="contract">
+          <option value="">Any</option>
+          <option value="true">Contract</option>
+          <option value="false">Full-time</option>
+        </select>
+      </div>
+      <div>
+        <button onclick="loadJobs()">Load Jobs</button>
+      </div>
+      <div>
+        <button onclick="exportJson()">Export JSON</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="msg" class="muted" style="margin-top:10px;"></div>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="width:32%;">Job</th>
+        <th style="width:12%;">Type</th>
+        <th style="width:26%;">Tags</th>
+        <th style="width:30%;">Link</th>
+      </tr>
+    </thead>
+    <tbody id="jobs"></tbody>
+  </table>
+
+<script>
+  let lastJobs = [];
+
+  async function apiGet(path) {
+    const r = await fetch(path);
+    if (!r.ok) throw new Error(await r.text());
+    return r.json();
+  }
+
+  function setMsg(t){ document.getElementById("msg").textContent = t; }
+
+  function escapeHtml(s){
+    return String(s)
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
+
+  function row(job){
+    const tags = (job.tags || []).map(t=>`<span class="pill">${escapeHtml(t)}</span>`).join(" ");
+    const type = `${job.remote ? "Remote" : "Onsite/Hybrid"} / ${job.contract ? "Contract" : "Full-time"}`;
+    const link = job.url ? `<a href="${job.url}" target="_blank">Open</a>` : `<span class="muted">No URL</span>`;
+    return `
+      <tr>
+        <td>
+          <div><b>${escapeHtml(job.title)}</b></div>
+          <div>${escapeHtml(job.company)} ${job.location ? " • " + escapeHtml(job.location) : ""}</div>
+          <div class="muted">Job ID: ${job.id} ${job.source ? " • " + escapeHtml(job.source) : ""}</div>
+        </td>
+        <td>${type}</td>
+        <td>${tags || "<span class='muted'>—</span>"}</td>
+        <td>${link}</td>
+      </tr>
+    `;
+  }
+
+  async function loadJobs(){
+    try{
+      setMsg("Loading jobs...");
+      const q = document.getElementById("q").value.trim();
+      const remote = document.getElementById("remote").value;
+      const contract = document.getElementById("contract").value;
+
+      const params = new URLSearchParams();
+      if (q) params.set("q", q);
+      if (remote !== "") params.set("remote", remote);
+      if (contract !== "") params.set("contract", contract);
+
+      const jobs = await apiGet("/jobs?" + params.toString());
+      lastJobs = jobs;
+
+      document.getElementById("jobs").innerHTML = jobs.map(row).join("");
+      setMsg(`Loaded ${jobs.length} jobs`);
+    }catch(e){
+      setMsg("Error: " + e.message);
+    }
+  }
+
+  function exportJson(){
+    const blob = new Blob([JSON.stringify(lastJobs, null, 2)], {type:"application/json"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "jobs.json";
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  loadJobs();
+</script>
+
+</body>
+</html>
+
