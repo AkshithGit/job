@@ -1,0 +1,11 @@
+[
+  { "name": "Stripe", "greenhouse": "stripe" },
+  { "name": "Datadog", "greenhouse": "datadog" },
+  { "name": "Cloudflare", "greenhouse": "cloudflare" },
+  { "name": "Coinbase", "greenhouse": "coinbase" },
+
+  { "name": "HashiCorp", "lever": "hashicorp" },
+  { "name": "Twilio", "lever": "twilio" },
+  { "name": "DoorDash", "lever": "doordash" },
+  { "name": "Airbnb", "lever": "airbnb" }
+]

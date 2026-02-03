@@ -1,96 +1,179 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>JobBoard</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 16px; }
-    .row { display:flex; gap:12px; flex-wrap:wrap; align-items:end; }
-    input, select { padding:8px; }
-    button { padding:8px 10px; cursor:pointer; }
-    table { width:100%; border-collapse: collapse; margin-top: 14px; }
-    th, td { border: 1px solid #ddd; padding: 10px; vertical-align: top; }
-    th { background:#f7f7f7; text-align:left; }
-    .pill { display:inline-block; padding:2px 8px; border-radius:999px; background:#111827; color:white; font-size:12px; margin-right:6px; }
-    .muted { color:#666; font-size: 12px; }
-    a { color: #0b5fff; text-decoration: none; }
-    a:hover { text-decoration: underline; }
-    .card { border:1px solid #e5e7eb; border-radius:10px; padding:12px; background:#fafafa; }
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; margin: 0; background:#f6f7fb; }
+    header { background:#111827; color:#fff; padding:14px 18px; display:flex; align-items:center; gap:12px; }
+    header h1 { font-size:16px; margin:0; }
+    .wrap { max-width: 1200px; margin: 18px auto; padding: 0 16px; }
+    .panel { background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:12px; box-shadow: 0 1px 2px rgba(0,0,0,.04); }
+    .row { display:flex; flex-wrap: wrap; gap:10px; align-items: end; }
+    label { font-size:12px; color:#374151; display:block; margin-bottom:6px; }
+    input[type="text"], select { padding:8px 10px; border:1px solid #d1d5db; border-radius:10px; min-width: 210px; }
+    .small { min-width: 140px; }
+    .check { display:flex; align-items:center; gap:8px; padding: 8px 10px; border:1px solid #e5e7eb; border-radius:10px; background:#fafafa; }
+    button { padding:9px 12px; border:1px solid #111827; background:#111827; color:#fff; border-radius:10px; cursor:pointer; }
+    button.secondary { background:#fff; color:#111827; border-color:#d1d5db; }
+    .muted { color:#6b7280; font-size:12px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+    th, td { text-align: left; padding: 10px; border-top: 1px solid #eee; vertical-align: top; }
+    th { font-size:12px; color:#374151; background:#fafafa; position: sticky; top: 0; }
+    .pill { display:inline-block; padding:2px 8px; border-radius:999px; font-size:11px; font-weight:700; border:1px solid #e5e7eb; background:#f9fafb; margin-right:6px; }
+    .actions { display:flex; flex-wrap: wrap; gap:6px; }
+    .actions button { padding:6px 8px; border-radius:9px; font-size:12px; }
+    a { color:#2563eb; text-decoration:none; }
+    a:hover { text-decoration:underline; }
+    .empty { padding: 14px; background: #fff7ed; border: 1px solid #fed7aa; border-radius: 10px; margin-top: 12px; }
   </style>
 </head>
-<body>
-  <h2>JobBoard — Jobs List</h2>
 
-  <div class="card">
+<body>
+<header>
+  <h1>JobBoard</h1>
+  <span class="muted" id="status">loading…</span>
+</header>
+
+<div class="wrap">
+  <div class="panel">
     <div class="row">
       <div>
-        <div class="muted">Search</div>
-        <input id="q" placeholder="java, devops, .net, spring, terraform..." style="min-width:280px;">
+        <label>Profile</label>
+        <select id="profile" class="small"></select>
       </div>
+
       <div>
-        <div class="muted">Remote</div>
-        <select id="remote">
-          <option value="">Any</option>
+        <label>Search</label>
+        <input id="q" type="text" placeholder="java, devops, .net, kubernetes..." />
+      </div>
+
+      <div>
+        <label>Remote</label>
+        <select id="remote" class="small">
+          <option value="">All</option>
           <option value="true">Remote</option>
           <option value="false">Onsite/Hybrid</option>
         </select>
       </div>
+
       <div>
-        <div class="muted">Contract</div>
-        <select id="contract">
-          <option value="">Any</option>
+        <label>Contract</label>
+        <select id="contract" class="small">
+          <option value="">All</option>
           <option value="true">Contract</option>
           <option value="false">Full-time</option>
         </select>
       </div>
-      <div>
-        <button onclick="loadJobs()">Load Jobs</button>
+
+      <div class="check">
+        <input type="checkbox" id="onlyNew" />
+        <div>
+          <div style="font-size:12px; font-weight:700;">Only new since last reload</div>
+          <div class="muted">Uses DB created_at</div>
+        </div>
       </div>
-      <div>
-        <button onclick="exportJson()">Export JSON</button>
+
+      <div style="display:flex; gap:8px;">
+        <button id="btnLoad">Load</button>
+        <button id="btnResetNew" class="secondary">Reset “Only new”</button>
       </div>
+    </div>
+
+    <div class="muted" style="margin-top:10px;">
+      Default cleanup: we automatically exclude Intern + Tutoring results.
     </div>
   </div>
 
-  <div id="msg" class="muted" style="margin-top:10px;"></div>
+  <div class="panel" style="margin-top:14px;">
+    <div class="muted" id="count"></div>
+    <div id="emptyBox" class="empty" style="display:none;"></div>
 
-  <table>
-    <thead>
-      <tr>
-        <th style="width:32%;">Job</th>
-        <th style="width:12%;">Type</th>
-        <th style="width:26%;">Tags</th>
-        <th style="width:30%;">Link</th>
-      </tr>
-    </thead>
-    <tbody id="jobs"></tbody>
-  </table>
+    <table>
+      <thead>
+        <tr>
+          <th style="width:45%;">Job</th>
+          <th style="width:15%;">Type</th>
+          <th style="width:25%;">Tags</th>
+          <th style="width:8%;">Apply</th>
+          <th style="width:7%;">Actions</th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+</div>
 
 <script>
-  let lastJobs = [];
-
-  async function apiGet(path) {
-    const r = await fetch(path);
-    if (!r.ok) throw new Error(await r.text());
-    return r.json();
-  }
-
-  function setMsg(t){ document.getElementById("msg").textContent = t; }
-
-  function escapeHtml(s){
+  function escapeHtml(s) {
+    if (s === null || s === undefined) return "";
     return String(s)
-      .replaceAll("&","&amp;")
-      .replaceAll("<","&lt;")
-      .replaceAll(">","&gt;")
-      .replaceAll('"',"&quot;")
-      .replaceAll("'","&#039;");
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
   }
 
-  function row(job){
-    const tags = (job.tags || []).map(t=>`<span class="pill">${escapeHtml(t)}</span>`).join(" ");
+  function getBool(v) {
+    if (v === "" || v === null || v === undefined) return null;
+    return v === "true";
+  }
+
+  function setStatus(msg) {
+    document.getElementById("status").textContent = msg;
+  }
+
+  function showEmpty(msg) {
+    const box = document.getElementById("emptyBox");
+    box.style.display = "block";
+    box.innerHTML = msg;
+  }
+
+  function hideEmpty() {
+    const box = document.getElementById("emptyBox");
+    box.style.display = "none";
+    box.innerHTML = "";
+  }
+
+  function buildQueryParams() {
+    const profileId = document.getElementById("profile").value;
+    const q = document.getElementById("q").value.trim();
+    const remote = getBool(document.getElementById("remote").value);
+    const contract = getBool(document.getElementById("contract").value);
+    const onlyNew = document.getElementById("onlyNew").checked;
+
+    const params = new URLSearchParams();
+    params.set("profile_id", profileId);
+
+    if (q) params.set("q", q);
+    if (remote !== null) params.set("remote", String(remote));
+    if (contract !== null) params.set("contract", String(contract));
+
+    // ✅ always exclude intern + tutoring for your experienced job search
+    params.set("exclude_intern", "true");
+    params.set("exclude_tutoring", "true");
+
+    // ✅ do NOT exclude entry-level by default (keeps more results visible)
+    params.set("exclude_entry", "false");
+
+    // ✅ Only new since last reload
+    if (onlyNew) {
+      const lastSeen = localStorage.getItem("jobboard_lastSeenTs");
+      if (lastSeen) {
+        params.set("since", lastSeen);
+      }
+    }
+
+    return params;
+  }
+
+  function jobRow(job) {
+    const tags = (job.tags || []).map(t => `<span class="pill">${escapeHtml(t)}</span>`).join(" ");
     const type = `${job.remote ? "Remote" : "Onsite/Hybrid"} / ${job.contract ? "Contract" : "Full-time"}`;
-    const link = job.url ? `<a href="${job.url}" target="_blank">Open</a>` : `<span class="muted">No URL</span>`;
+    const applyLink = job.url ? `<a href="${escapeHtml(job.url)}" target="_blank" rel="noopener">Open</a>` : `<span class="muted">No URL</span>`;
+
     return `
       <tr>
         <td>
@@ -100,44 +183,90 @@
         </td>
         <td>${type}</td>
         <td>${tags || "<span class='muted'>—</span>"}</td>
-        <td>${link}</td>
+        <td>${applyLink}</td>
+        <td>
+          <div class="actions">
+            <button class="secondary" onclick="openJob('${escapeHtml(job.url || "")}')">Open</button>
+          </div>
+        </td>
       </tr>
     `;
   }
 
-  async function loadJobs(){
-    try{
-      setMsg("Loading jobs...");
-      const q = document.getElementById("q").value.trim();
-      const remote = document.getElementById("remote").value;
-      const contract = document.getElementById("contract").value;
+  function openJob(url) {
+    if (!url) return;
+    window.open(url, "_blank", "noopener");
+  }
 
-      const params = new URLSearchParams();
-      if (q) params.set("q", q);
-      if (remote !== "") params.set("remote", remote);
-      if (contract !== "") params.set("contract", contract);
+  async function bootstrapProfiles() {
+    const res = await fetch("/profiles/bootstrap", { method: "POST" });
+    if (!res.ok) throw new Error(await res.text());
+    const profiles = await res.json();
 
-      const jobs = await apiGet("/jobs?" + params.toString());
-      lastJobs = jobs;
+    const sel = document.getElementById("profile");
+    sel.innerHTML = profiles.map(p => `<option value="${p.id}">${escapeHtml(p.display_name)}</option>`).join("");
 
-      document.getElementById("jobs").innerHTML = jobs.map(row).join("");
-      setMsg(`Loaded ${jobs.length} jobs`);
-    }catch(e){
-      setMsg("Error: " + e.message);
+    // default to DevOps if exists
+    const devops = profiles.find(p => (p.name || "").toLowerCase() === "devops");
+    if (devops) sel.value = devops.id;
+  }
+
+  async function loadJobs() {
+    hideEmpty();
+    setStatus("loading jobs…");
+
+    const params = buildQueryParams();
+    const url = "/dashboard/jobs?" + params.toString();
+
+    const res = await fetch(url);
+    if (!res.ok) {
+      setStatus("error");
+      const txt = await res.text();
+      showEmpty(`<b>Backend error</b><div class="muted">${escapeHtml(txt)}</div>`);
+      return;
     }
+
+    const data = await res.json();
+
+    // After successful load, set last seen timestamp
+    localStorage.setItem("jobboard_lastSeenTs", new Date().toISOString());
+
+    document.getElementById("tbody").innerHTML = data.map(jobRow).join("");
+    document.getElementById("count").textContent = `Showing ${data.length} jobs`;
+
+    if (data.length === 0) {
+      showEmpty(`
+        <b>No jobs matched.</b>
+        <div class="muted" style="margin-top:6px;">
+          Try: Remote=All, Contract=All, clear Search, and turn OFF "Only new since last reload".
+          Also note: Intern + Tutoring are excluded automatically.
+        </div>
+      `);
+    }
+
+    setStatus("ready");
   }
 
-  function exportJson(){
-    const blob = new Blob([JSON.stringify(lastJobs, null, 2)], {type:"application/json"});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "jobs.json";
-    a.click();
-    URL.revokeObjectURL(url);
+  function resetOnlyNew() {
+    localStorage.removeItem("jobboard_lastSeenTs");
+    document.getElementById("onlyNew").checked = false;
+    setStatus("reset only-new timestamp");
   }
 
-  loadJobs();
+  document.getElementById("btnLoad").addEventListener("click", loadJobs);
+  document.getElementById("btnResetNew").addEventListener("click", resetOnlyNew);
+
+  (async function init() {
+    try {
+      await bootstrapProfiles();
+      setStatus("ready");
+      await loadJobs();
+    } catch (e) {
+      console.error(e);
+      setStatus("error");
+      showEmpty(`<b>UI init failed</b><div class="muted">${escapeHtml(e.message || String(e))}</div>`);
+    }
+  })();
 </script>
 
 </body>
