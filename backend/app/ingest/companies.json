@@ -1,11 +1,165 @@
 [
-  { "name": "Stripe", "greenhouse": "stripe" },
-  { "name": "Datadog", "greenhouse": "datadog" },
-  { "name": "Cloudflare", "greenhouse": "cloudflare" },
-  { "name": "Coinbase", "greenhouse": "coinbase" },
+  {
+    "name": "Google",
+    "greenhouse_slug": "google",
+    "lever_slug": null
+  },
+  {
+    "name": "Amazon",
+    "greenhouse_slug": "amazon",
+    "lever_slug": null
+  },
+  {
+    "name": "Microsoft",
+    "greenhouse_slug": "microsoft",
+    "lever_slug": null
+  },
+  {
+    "name": "Netflix",
+    "greenhouse_slug": null,
+    "lever_slug": "netflix"
+  },
+  {
+    "name": "Meta",
+    "greenhouse_slug": "facebook",
+    "lever_slug": null
+  },
+  {
+    "name": "Apple",
+    "greenhouse_slug": null,
+    "lever_slug": "apple"
+  },
 
-  { "name": "HashiCorp", "lever": "hashicorp" },
-  { "name": "Twilio", "lever": "twilio" },
-  { "name": "DoorDash", "lever": "doordash" },
-  { "name": "Airbnb", "lever": "airbnb" }
+  // ===== FINTECH =====
+  {
+    "name": "JPMorgan Chase",
+    "greenhouse_slug": "jpmorganchase",
+    "lever_slug": null
+  },
+  {
+    "name": "Goldman Sachs",
+    "greenhouse_slug": "goldmansachs",
+    "lever_slug": null
+  },
+  {
+    "name": "Capital One",
+    "greenhouse_slug": "capitalone",
+    "lever_slug": null
+  },
+  {
+    "name": "Stripe",
+    "greenhouse_slug": null,
+    "lever_slug": "stripe"
+  },
+  {
+    "name": "PayPal",
+    "greenhouse_slug": "paypal",
+    "lever_slug": null
+  },
+
+  // ===== HEALTHCARE / INSURANCE =====
+  {
+    "name": "Humana",
+    "greenhouse_slug": "humana",
+    "lever_slug": null
+  },
+  {
+    "name": "UnitedHealth Group",
+    "greenhouse_slug": "unitedhealthgroup",
+    "lever_slug": null
+  },
+  {
+    "name": "CVS Health",
+    "greenhouse_slug": "cvshealth",
+    "lever_slug": null
+  },
+  {
+    "name": "Cigna",
+    "greenhouse_slug": "cigna",
+    "lever_slug": null
+  },
+
+  // ===== RETAIL / E-COMMERCE =====
+  {
+    "name": "Walmart Global Tech",
+    "greenhouse_slug": "walmartglobaltech",
+    "lever_slug": null
+  },
+  {
+    "name": "Target",
+    "greenhouse_slug": "target",
+    "lever_slug": null
+  },
+  {
+    "name": "Wayfair",
+    "greenhouse_slug": "wayfair",
+    "lever_slug": null
+  },
+
+  // ===== CLOUD / SAAS =====
+  {
+    "name": "Salesforce",
+    "greenhouse_slug": "salesforce",
+    "lever_slug": null
+  },
+  {
+    "name": "Adobe",
+    "greenhouse_slug": "adobe",
+    "lever_slug": null
+  },
+  {
+    "name": "Atlassian",
+    "greenhouse_slug": null,
+    "lever_slug": "atlassian"
+  },
+  {
+    "name": "ServiceNow",
+    "greenhouse_slug": "servicenow",
+    "lever_slug": null
+  },
+
+  // ===== CONSULTING / ENTERPRISE IT =====
+  {
+    "name": "Accenture",
+    "greenhouse_slug": "accenture",
+    "lever_slug": null
+  },
+  {
+    "name": "Deloitte",
+    "greenhouse_slug": "deloitte",
+    "lever_slug": null
+  },
+  {
+    "name": "Infosys",
+    "greenhouse_slug": "infosys",
+    "lever_slug": null
+  },
+  {
+    "name": "Cognizant",
+    "greenhouse_slug": "cognizant",
+    "lever_slug": null
+  },
+
+  // ===== REMOTE-FIRST / TECH =====
+  {
+    "name": "GitLab",
+    "greenhouse_slug": null,
+    "lever_slug": "gitlab"
+  },
+  {
+    "name": "Automattic",
+    "greenhouse_slug": null,
+    "lever_slug": "automattic"
+  },
+  {
+    "name": "Zapier",
+    "greenhouse_slug": null,
+    "lever_slug": "zapier"
+  },
+  {
+    "name": "Elastic",
+    "greenhouse_slug": "elastic",
+    "lever_slug": null
+  }
 ]
+
